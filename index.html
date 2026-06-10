@@ -232,11 +232,12 @@
         <h2>▶ 最強のステータスを見つけよう</h2>
         
         <div class="rule-box">
+            <strong>遠距離攻撃と近距離攻撃はランダムで起こるものとし、遠距離攻撃の場合は魔法攻撃、近距離攻撃の場合は物理攻撃が使われるものとする。</strong><br>
             <strong>【パラメータのルール】</strong>
             <ul>
                 <li>HPは<strong>240</strong>固定。「威力」と「命中率」は合計で<strong>120</strong>になるように配分。</li>
-                <li>⚔️ <strong>物理攻撃 (近距離):</strong> 命中上限<strong>80%</strong> / 会心率<strong>30%</strong> (ダメージ2倍)</li>
-                <li>☄️ <strong>魔法攻撃 (遠距離):</strong> 命中上限<strong>100%</strong> / 会心率<strong>10%</strong> (ダメージ2倍)</li>
+                <li>⚔️ <strong>物理攻撃 (近距離): 攻撃が命中した時、ダメージが2倍になる確率<strong>30%</strong></li>
+                <li>☄️ <strong>魔法攻撃 (遠距離): 攻撃が命中した時、ダメージが2倍になる確率<strong>10%</strong></li>
             </ul>
         </div>
 
@@ -256,7 +257,7 @@
             <div class="controls">
                 <div class="slider-row">
                     <label>⚔️ 物理威力 (近)</label>
-                    <input type="range" id="atk-slider" min="40" max="120" step="1" value="100" oninput="updateStats()">
+                    <input type="range" id="atk-slider" min="20" max="120" step="1" value="100" oninput="updateStats()">
                     <div class="stat-display">威力:<span id="atk-val">100</span>/ 命中:<span id="atk-hit">20</span>%</div>
                 </div>
                 
@@ -288,7 +289,7 @@
         <div id="custom-cpu-ui" style="display:none; background:rgba(0,0,0,0.5); padding:15px; margin-bottom:15px; border: 2px dashed #fff; border-radius: 4px;">
             <div class="slider-row" style="margin: 5px 0;">
                 <label style="width:120px;">敵 物理威力:</label>
-                <input type="range" id="custom-atk" min="40" max="120" step="1" value="100" oninput="document.getElementById('custom-atk-val').innerText=this.value">
+                <input type="range" id="custom-atk" min="20" max="120" step="1" value="100" oninput="document.getElementById('custom-atk-val').innerText=this.value">
                 <span style="font-family:monospace; margin-left: 10px;">威力 <span id="custom-atk-val" style="color:var(--crit); font-weight:bold;">100</span></span>
             </div>
             <div class="slider-row" style="margin: 5px 0;">
@@ -335,12 +336,12 @@
     </div>
 
     <div id="rl" class="tab-content rpg-window">
-        <h2>▶ AIはどうやって「最強」を見つけるのか？</h2>
+        <h2>▶ AIはどうやって「最強」を見つけるのか？（Q-learning）</h2>
         
         <div class="rule-box" style="background: rgba(0,0,0,0.5); border-color: #9b59b6;">
             <p style="color: #9b59b6; font-weight: bold; font-size: 1.1em;">【数学を知らないAIの学習メカニズム】</p>
-            <p>AIは最初、数学の公式を一切知りません。代わりに頭の中に<strong>「威力40から120までのラベルが貼られた玉」が入った袋</strong>を持っています。</p>
-            <p>AIはバトルを繰り返しながら、以下のルールで玉の数を更新していきます。</p>
+            <p>AIは最初、数学の公式を一切知りません。代わりに頭の中に<strong>「威力20から120までのラベルが貼られた玉」が入った袋</strong>を持っています。</p>
+            <p>AIはバトルを繰り返しながら、以下のルールで玉の数（期待値=Q値）を更新していきます。</p>
             <ul>
                 <li><strong>行動:</strong> 袋に入っているある威力の玉を引き、その威力で攻撃。時々、玉の個数による確率の違いを無視して、全ての威力が出る確率を同じにして、出た威力で攻撃。</li>
                 <li><strong>報酬・罰:</strong> ダメージを与えたら玉を増やし、ミスしたら減らす。</li>
@@ -356,12 +357,12 @@
             </div>
         </div>
         
-        <button id="rl-btn" onclick="runRL()" style = "background: #2ecc71">▶ AIの特訓（袋の中の玉の更新）を可視化する</button>
+        <button id="rl-btn" onclick="runRL()" style="background: #2ecc71">▶ AIの特訓（袋の中の玉の更新）を可視化する</button>
         <div id="rl-progress" style="text-align: center; margin-top: 10px; font-weight: bold; color: var(--crit);"></div>
 
         <div class="graphs-wrapper">
             <div>
-                <h3 style="color:#e74c3c; text-align:center; margin-bottom:5px;">⚔️ 物理攻撃の学習 (威力40〜120の玉の数)</h3>
+                <h3 style="color:#e74c3c; text-align:center; margin-bottom:5px;">⚔️ 物理攻撃の学習 (威力20〜120の玉の数)</h3>
                 <div class="graph-scroll-area">
                     <div class="graph-container" id="rl-graph-phys"></div>
                 </div>
@@ -472,7 +473,7 @@ function updateStats() {
     const mag = parseInt(document.getElementById('mag-slider').value);
     
     playerStats.atk = atk;
-    playerStats.atkHit = Math.min(120 - atk, 80); 
+    playerStats.atkHit = Math.min(120 - atk, 100); 
     
     playerStats.mag = mag;
     playerStats.magHit = Math.min(120 - mag, 100); 
@@ -652,7 +653,7 @@ function runInstantBattle(p1Stats, cpuStats) {
         let p1Hit = dist === 'near' ? p1Stats.atkHit : p1Stats.magHit;
         
         let p2Pow = dist === 'near' ? cpuStats.atk : cpuStats.mag;
-        let p2Hit = dist === 'near' ? Math.min(120 - cpuStats.atk, 80) : Math.min(120 - cpuStats.mag, 100);
+        let p2Hit = dist === 'near' ? Math.min(120 - cpuStats.atk, 100) : Math.min(120 - cpuStats.mag, 100);
 
         const calcDmg = (pow, hit, isNear) => {
             if (Math.random() * 100 < hit) {
@@ -730,7 +731,7 @@ async function runVisualBattle(cpu, prefix) {
         const p1Hit = dist === 'near' ? playerStats.atkHit : playerStats.magHit;
         
         const p2Power = dist === 'near' ? cpu.atk : cpu.mag;
-        const p2Hit = dist === 'near' ? Math.min(120 - cpu.atk, 80) : Math.min(120 - cpu.mag, 100);
+        const p2Hit = dist === 'near' ? Math.min(120 - cpu.atk, 100) : Math.min(120 - cpu.mag, 100);
         
         if(p1GoesFirst) {
             await executeAttack(1, dist, p1Power, p1Hit, p2, p1, ui);
@@ -939,14 +940,14 @@ async function runRL() {
     const batchSize = 1000;
 
     // Q値（袋の中の玉の数）の初期化
-    let qPhys = new Array(81).fill(10); // 威力 40〜120
+    let qPhys = new Array(101).fill(10); // 威力 20〜120
     let qMag = new Array(101).fill(10); // 威力 20〜120
     
     let physBars = [];
     let magBars = [];
 
     // --- HTML要素の事前生成（グラフの土台） ---
-    for(let power = 40; power <= 120; power++) {
+    for(let power = 20; power <= 120; power++) {
         const wrapper = document.createElement('div');
         wrapper.className = 'bar-wrapper';
         const bar = document.createElement('div');
@@ -990,8 +991,8 @@ async function runRL() {
         for (let b = 0; b < batchSize; b++) {
             // 物理の学習 1エピソード
             let physActionIdx = epsilonGreedy(qPhys, epsilon);
-            let physPower = physActionIdx + 40;
-            let physHit = Math.min(120 - physPower, 80);
+            let physPower = physActionIdx + 20;
+            let physHit = Math.min(120 - physPower, 100);
             let physReward = 0;
             if(Math.random() * 100 < physHit) {
                 physReward = (Math.random() < 0.30) ? physPower * 2 : physPower;
@@ -1013,8 +1014,8 @@ async function runRL() {
 
         // --- 画面への描画更新 ---
         for(let i=0; i<physBars.length; i++) {
-            let power = i + 40;
-            let hit = Math.min(120 - power, 80);
+            let power = i + 20;
+            let hit = Math.min(120 - power, 100);
             let theo = power * (hit / 100) * 1.3;
             // バーの高さを抑えるため分母を60に変更 (最大で150px程度に収まる)
             physBars[i].style.height = `${(qPhys[i] / 60) * 180}px`;
@@ -1033,7 +1034,7 @@ async function runRL() {
 
     // 学習完了後、最適解を見つける
     let bestPhysIndex = qPhys.indexOf(Math.max(...qPhys));
-    let bestPhysPower = bestPhysIndex + 40;
+    let bestPhysPower = bestPhysIndex + 20;
     
     let bestMagIndex = qMag.indexOf(Math.max(...qMag));
     let bestMagPower = bestMagIndex + 20;
@@ -1054,7 +1055,7 @@ async function runRL() {
     // AI完全体のステータスを更新
     aiLearnedStats = { atk: bestPhysPower, mag: bestMagPower, name: "AI完全体", imgSrc: 'hero.png' };
     document.getElementById('ai-learned-atk').innerText = bestPhysPower;
-    document.getElementById('ai-learned-atk-hit').innerText = Math.min(120 - bestPhysPower, 80);
+    document.getElementById('ai-learned-atk-hit').innerText = Math.min(120 - bestPhysPower, 100);
     document.getElementById('ai-learned-mag').innerText = bestMagPower;
     document.getElementById('ai-learned-mag-hit').innerText = Math.min(120 - bestMagPower, 100);
 
