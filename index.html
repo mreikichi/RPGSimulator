@@ -6,8 +6,10 @@
 <title>期待値＆強化学習 対戦シミュレーター</title>
 <style>
     /* =========================================
-       RPG風 全体テーマ＆UI
+       基本リセット＆レスポンシブ設定
        ========================================= */
+    * { box-sizing: border-box; }
+    
     :root { 
         --rpg-bg: #111; 
         --rpg-panel: #000033;
@@ -19,41 +21,43 @@
     body { font-family: 'Courier New', monospace, sans-serif; background-color: var(--rpg-bg); color: var(--rpg-text); margin: 0; padding: 20px; }
     h1, h2, h3 { color: var(--rpg-text); text-shadow: 2px 2px 0 #000; }
     
-    .container { max-width: 1000px; margin: 0 auto; }
+    .container { max-width: 1000px; margin: 0 auto; width: 100%; }
     
-    .rpg-window { background: var(--rpg-panel); border: 4px solid var(--rpg-border); border-radius: 8px; padding: 20px; box-shadow: 4px 4px 0px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.8); margin-bottom: 20px; }
+    .rpg-window { background: var(--rpg-panel); border: 4px solid var(--rpg-border); border-radius: 8px; padding: 20px; box-shadow: 4px 4px 0px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.8); margin-bottom: 20px; width: 100%; }
 
-    .tabs { display: flex; border-bottom: 4px solid var(--rpg-border); margin-bottom: 20px; }
-    .tab { padding: 10px 18px; cursor: pointer; font-weight: bold; background: #222; border: 4px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; margin-right: 5px; transition: 0.2s; color: #aaa; font-size: 1.1em; }
+    /* タブUI */
+    .tabs { display: flex; border-bottom: 4px solid var(--rpg-border); margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { padding: 10px 18px; cursor: pointer; font-weight: bold; background: #222; border: 4px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; margin-right: 5px; transition: 0.2s; color: #aaa; font-size: 1.1em; flex-grow: 1; text-align: center; }
     .tab.active { background: var(--rpg-panel); color: #fff; border-color: var(--rpg-border); }
     .tab-content { display: none; animation: fadeIn 0.4s; }
     .tab-content.active { display: block; }
     
-    /* ロックされたタブを隠す */
     .locked-tab { display: none !important; }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    .rule-box { background: rgba(255,255,255,0.1); padding: 15px; border-left: 5px solid #ff9800; margin-bottom: 20px; font-size: 1.05em; line-height: 1.5; }
+    .rule-box { background: rgba(255,255,255,0.1); padding: 15px; border-left: 5px solid #ff9800; margin-bottom: 20px; font-size: 1.05em; line-height: 1.5; overflow-wrap: anywhere; }
     .rule-box ul { margin: 5px 0 0 0; padding-left: 20px; }
 
-    .setup-area { display: flex; gap: 30px; align-items: center; margin-bottom: 20px; }
+    .setup-area { display: flex; gap: 30px; align-items: center; margin-bottom: 20px; width: 100%; }
     .char-preview { flex: 1; text-align: center; }
     .char-preview img { width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); transition: transform 0.3s; }
     
-    .controls { flex: 2; }
-    .slider-row { display: flex; align-items: center; margin: 15px 0; }
+    .controls { flex: 2; width: 100%; }
+    .slider-row { display: flex; align-items: center; margin: 15px 0; flex-wrap: wrap; }
     .slider-row label { width: 140px; font-weight: bold; }
-    .slider-row input[type="range"] { flex: 1; margin: 0 15px; cursor: pointer; }
+    .slider-row input[type="range"] { flex: 1; margin: 0 15px; cursor: pointer; min-width: 150px; }
     .stat-display { width: 200px; background: rgba(0,0,0,0.5); padding: 5px; border: 2px solid #fff; text-align: center; border-radius: 4px; }
 
     .preset-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
-    .preset-btn { background: #333; color: #fff; border: 2px solid #fff; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; font-family: inherit; }
+    .preset-btn { background: #333; color: #fff; border: 2px solid #fff; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; font-family: inherit; flex-grow: 1; }
     .preset-btn:hover { background: #555; }
 
     /* =========================================
        バトル画面・演出
        ========================================= */
+    .battle-header-controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+    
     .battle-field { position: relative; width: 100%; height: 350px; background: linear-gradient(to bottom, #2c3e50, #1a252f); border-radius: 4px; overflow: hidden; border: 4px solid #fff; margin-bottom: 20px; box-shadow: inset 0 0 30px #000; transition: background 0.3s, transform 0.1s; }
     .battle-field.state-near { background: linear-gradient(to bottom, #4a2323, #2b1111); }
     .battle-field.state-far { background: linear-gradient(to bottom, #1a2b4c, #0a1128); }
@@ -78,7 +82,10 @@
     .hp-bar-container { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); width: 100px; height: 12px; background: #333; border: 2px solid #fff; overflow: hidden; }
     .hp-bar { height: 100%; background: #2ecc71; transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     
-    .status-panel { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .status-panel { display: flex; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
+    .player-status, .enemy-status { flex: 1; padding: 10px; border-radius: 8px; }
+    .enemy-status { text-align: right; }
+    
     .distance-display { text-align: center; font-size: 1.5em; font-weight: bold; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; margin: 10px 0; border: 2px solid #fff; transition: 0.3s; }
     
     .log-box { height: 180px; overflow-y: auto; background: rgba(0,0,0,0.9); color: #fff; padding: 15px; font-size: 1.1em; border-radius: 4px; line-height: 1.6; border: 2px solid #fff; box-shadow: inset 0 0 10px #000; scroll-behavior: smooth; }
@@ -111,7 +118,7 @@
     .boss-explosion { position: absolute; font-size: 4rem; z-index: 25; animation: explodeAnim 0.6s forwards; pointer-events: none; text-shadow: 0 0 10px red; top: 50%; left: 50%; margin-top: -30px; }
     @keyframes explodeAnim { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; filter: blur(4px); } }
 
-    .victory-banner { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 4.5rem; color: #f1c40f; text-shadow: 0 0 20px #000, 3px 3px 0 #c0392b, -3px -3px 0 #c0392b; font-weight: bold; z-index: 50; animation: bannerPop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; letter-spacing: 5px; text-align: center; }
+    .victory-banner { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 4.5rem; color: #f1c40f; text-shadow: 0 0 20px #000, 3px 3px 0 #c0392b, -3px -3px 0 #c0392b; font-weight: bold; z-index: 50; animation: bannerPop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; letter-spacing: 5px; text-align: center; width: 100%; }
     .defeat-banner { color: #7f8c8d; text-shadow: 0 0 20px #000, 3px 3px 0 #2c3e50, -3px -3px 0 #2c3e50; }
     @keyframes bannerPop { 0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; } }
 
@@ -122,7 +129,7 @@
     .projectile { position: absolute; font-size: 3.5rem; z-index: 15; top: 150px; transition: left 0.2s linear, right 0.2s linear; filter: drop-shadow(0 0 10px #fff); }
 
     /* =========================================
-       コイントス演出 (3D CSS)
+       コイントス演出
        ========================================= */
     .coin-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); z-index: 100; display:flex; justify-content:center; align-items:center; flex-direction:column; opacity: 0; pointer-events: none; transition: 0.3s; }
     .coin-overlay.active { opacity: 1; }
@@ -130,16 +137,18 @@
     .coin-face { position: absolute; width: 100%; height: 100%; border-radius: 50%; backface-visibility: hidden; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:1.8rem; border: 6px solid gold; box-shadow: 0 0 20px gold; text-shadow: 2px 2px 0 #000; }
     .coin-front { background: #3498db; color: #fff; transform: rotateY(0deg); }
     .coin-back { background: #e74c3c; color: #fff; transform: rotateY(180deg); }
-    .coin-text { font-size: 2rem; color: #fff; font-weight: bold; margin-top: 20px; text-shadow: 2px 2px 0 #000; opacity: 0; transition: 0.3s; }
+    .coin-text { font-size: 2rem; color: #fff; font-weight: bold; margin-top: 20px; text-shadow: 2px 2px 0 #000; opacity: 0; transition: 0.3s; text-align: center; }
     .coin-text.show { opacity: 1; }
 
     /* =========================================
-       強化学習画面 (デュアルグラフ用 - 重なり防止の改良版)
+       強化学習画面 (デュアルグラフ用)
        ========================================= */
     .graphs-wrapper { display: flex; flex-direction: column; gap: 60px; margin-top: 30px; padding-bottom: 20px; }
     
-    /* グラフの高さを増やし、上部に余裕を持たせる */
-    .graph-container { display: flex; align-items: flex-end; height: 220px; border-bottom: 3px solid #fff; border-left: 3px solid #fff; padding: 0 5px; gap: 2px; position: relative; background: rgba(0,0,0,0.5); margin-bottom: 25px; margin-top: 10px; }
+    /* グラフ横スクロール対応 */
+    .graph-scroll-area { width: 100%; overflow-x: auto; padding-bottom: 35px; }
+    
+    .graph-container { display: flex; align-items: flex-end; height: 220px; border-bottom: 3px solid #fff; border-left: 3px solid #fff; padding: 0 5px; gap: 2px; position: relative; background: rgba(0,0,0,0.5); margin-top: 10px; min-width: 800px; /* スマホで潰れないように最低幅を設定 */ }
     
     .bar-wrapper { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; flex: 1; height: 100%; position: relative; }
     
@@ -149,20 +158,19 @@
     .bar.optimal { background: var(--crit); box-shadow: 0 0 15px rgba(241, 196, 15, 0.8); z-index: 5;}
     .bar.optimal-mag { background: #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.8); z-index: 5;}
     
-    /* 下部のラベル */
     .bar-label { position: absolute; top: 100%; left: 50%; transform: translateX(-50%) rotate(180deg); margin-top: 5px; font-weight: bold; font-size: 0.7em; color: #fff; writing-mode: vertical-rl; height: 25px; }
     
-    /* 最適解ラベル：バーの真上に配置 */
     .optimal-label { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 5px; font-size: 1.2em; color: var(--crit); font-weight: bold; text-shadow: 1px 1px 0 #000; white-space: nowrap; z-index: 10; pointer-events: none; }
     .optimal-label-mag { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 5px; font-size: 1.2em; color: #3498db; font-weight: bold; text-shadow: 1px 1px 0 #000; white-space: nowrap; z-index: 10; pointer-events: none; }
 
-    /* ツールチップ：バーの真上に吹き出しとして表示 */
     .data-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 10px; background: rgba(255,255,255,0.95); color: #000; padding: 8px 12px; border-radius: 6px; font-size: 0.9em; font-weight: bold; white-space: nowrap; opacity: 0; transition: 0.2s; pointer-events: none; z-index: 100; border: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.4); text-align: center; line-height: 1.3; }
-    .bar:hover .data-tooltip { opacity: 1; margin-bottom: 25px; } /* ホバー時に少し上に浮く */
+    .bar:hover .data-tooltip, .bar:active .data-tooltip { opacity: 1; margin-bottom: 25px; }
 
-    button { background: #555; color: #fff; border: 3px solid #fff; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 1.1em; font-weight: bold; font-family: inherit; transition: 0.1s; }
+    button { background: #555; color: #fff; border: 3px solid #fff; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 1.1em; font-weight: bold; font-family: inherit; transition: 0.1s; width: 100%; margin-bottom: 5px; }
     button:hover { background: #777; transform: translateY(2px); }
     button:disabled { background: #333; color: #777; border-color: #555; cursor: not-allowed; }
+    
+    #battle-btn, #battle-10000-btn, #battle-btn-ai, #battle-10000-btn-ai { width: auto; flex-grow: 1; }
 
     /* 高速化（10000回対戦モード時）のCSS上書き */
     .fast-mode * { animation-duration: 0.05s !important; transition-duration: 0.05s !important; }
@@ -171,20 +179,51 @@
 
     .progress-hud { color: #fff; background: #222; padding: 10px; margin-top: 10px; border: 2px solid var(--accent); font-family: monospace; font-size: 1.1em; border-radius: 4px; }
     
-    /* RLパラメータ表示用 */
     .rl-params { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 15px; background: #222; padding: 15px; border-radius: 8px; border: 2px solid #555; }
-    .rl-params div { font-weight: bold; font-family: monospace; font-size: 1.2em; }
-    .rl-params input[type="range"] { width: 200px; margin-left: 10px; vertical-align: middle; cursor: pointer; }
+    .rl-params div { font-weight: bold; font-family: monospace; font-size: 1.2em; width: 100%; text-align: center; }
+    .rl-params input[type="range"] { width: 80%; max-width: 300px; margin: 10px auto; display: block; cursor: pointer; }
+
+    /* =========================================
+       スマホ・タブレット向けレスポンシブデザイン
+       ========================================= */
+    @media (max-width: 768px) {
+        body { padding: 10px; }
+        .tabs { gap: 5px; border-bottom: none; }
+        .tab { flex: 1 1 45%; margin-right: 0; margin-bottom: 5px; font-size: 0.9em; padding: 12px 5px; border-radius: 6px; border-bottom: 4px solid transparent; }
+        .tab.active { border-bottom: 4px solid var(--rpg-border); border-radius: 6px; }
+
+        .setup-area { flex-direction: column; }
+        .slider-row { flex-direction: column; align-items: stretch; margin: 10px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
+        .slider-row label { width: 100%; margin-bottom: 10px; text-align: center; }
+        .slider-row input[type="range"] { margin: 15px 0; width: 100%; }
+        .stat-display { width: 100%; font-size: 1.1em; }
+
+        .battle-header-controls select { width: 100%; padding: 12px; font-size: 1.1em; }
+        #battle-btn, #battle-10000-btn, #battle-btn-ai, #battle-10000-btn-ai { width: 100%; margin-left: 0; padding: 15px; }
+
+        .status-panel { flex-direction: column; }
+        .enemy-status { text-align: left !important; }
+        
+        .battle-field { height: 280px; }
+        .character img { width: 90px; height: 90px; }
+        .distance-display { font-size: 1.2em; padding: 8px; }
+        .victory-banner { font-size: 3rem; }
+        .dmg-popup { font-size: 2.5rem; }
+        .dmg-popup.crit { font-size: 3.5rem; }
+
+        .rl-params div { font-size: 1em; }
+        #rl-btn { padding: 15px 10px; font-size: 1em; white-space: normal; height: auto; }
+    }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="text-align: center;">戦闘RPGシュミレータ</h1>
+    <h1 style="text-align: center;">戦闘RPGシミュレータ</h1>
     
     <div class="tabs">
         <div class="tab active" id="tab-btn-setup" onclick="handleSetupTabClick()">1. キャラ作成</div>
-        <div class="tab" onclick="switchTab('battle')">2. バトル検証 (CPU戦)</div>
+        <div class="tab" onclick="switchTab('battle')">2. バトル検証</div>
         <div class="tab locked-tab" id="tab-btn-rl" onclick="switchTab('rl')">3. AIの学習と進化</div>
         <div class="tab locked-tab" id="tab-btn-ai" onclick="switchTab('ai-battle')" style="color:#e74c3c;">4. vs AI完全体</div>
     </div>
@@ -195,18 +234,17 @@
         <div class="rule-box">
             <strong>【パラメータのルール】</strong>
             <ul>
-                <li>HPは<strong>200</strong>固定。「威力」と「命中率」は合計で<strong>120</strong>になるように配分。</li>
+                <li>HPは<strong>240</strong>固定。「威力」と「命中率」は合計で<strong>120</strong>になるように配分。</li>
                 <li>⚔️ <strong>物理攻撃 (近距離):</strong> 命中上限<strong>80%</strong> / 会心率<strong>30%</strong> (ダメージ2倍)</li>
                 <li>☄️ <strong>魔法攻撃 (遠距離):</strong> 命中上限<strong>100%</strong> / 会心率<strong>10%</strong> (ダメージ2倍)</li>
             </ul>
-            <p style="margin-top: 10px; color: #f1c40f; font-weight: bold;">※数学の知識（期待値の計算）を使って、最も1ターンの平均ダメージが高くなる数字を探し出そう！</p>
         </div>
 
         <div class="preset-buttons">
             <button class="preset-btn" onclick="applyPreset(100, 20)">① 戦士</button>
             <button class="preset-btn" onclick="applyPreset(40, 100)">② 魔女</button>
             <button class="preset-btn" onclick="applyPreset(40, 20)">③ 忍者</button>
-            <button class="preset-btn" onclick="applyPreset(60, 60)">④ 勇者</button>
+            <button class="preset-btn" onclick="applyPreset(100, 100)">④ 勇者</button>
         </div>
 
         <div class="setup-area">
@@ -218,14 +256,14 @@
             <div class="controls">
                 <div class="slider-row">
                     <label>⚔️ 物理威力 (近)</label>
-                    <input type="range" id="atk-slider" min="40" max="120" step="1" value="60" oninput="updateStats()">
-                    <div class="stat-display">威力:<span id="atk-val">60</span>/ 命中:<span id="atk-hit">60</span>%</div>
+                    <input type="range" id="atk-slider" min="40" max="120" step="1" value="100" oninput="updateStats()">
+                    <div class="stat-display">威力:<span id="atk-val">100</span>/ 命中:<span id="atk-hit">20</span>%</div>
                 </div>
                 
                 <div class="slider-row">
                     <label>☄️ 魔法威力 (遠)</label>
-                    <input type="range" id="mag-slider" min="20" max="120" step="1" value="60" oninput="updateStats()">
-                    <div class="stat-display">威力:<span id="mag-val">60</span>/ 命中:<span id="mag-hit">60</span>%</div>
+                    <input type="range" id="mag-slider" min="20" max="120" step="1" value="100" oninput="updateStats()">
+                    <div class="stat-display">威力:<span id="mag-val">100</span>/ 命中:<span id="mag-hit">20</span>%</div>
                 </div>
             </div>
         </div>
@@ -233,15 +271,15 @@
 
     <div id="battle" class="tab-content rpg-window">
         <h2>▶ 対戦シミュレーション</h2>
-        <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <div class="battle-header-controls">
             <label for="enemy-level" style="font-size: 1.1em; font-weight: bold;">敵CPUの強さ: </label>
-            <select id="enemy-level" onchange="toggleCustomCPU()" style="padding: 10px; font-size: 1em; border-radius: 4px; font-family: inherit; background: #222; color: #fff; border: 2px solid #fff;">
-                <option value="1">Lv.1</option>
-                <option value="2">Lv.2</option>
-                <option value="3">Lv.3</option>
-                <option value="4">Lv.4</option>
-                <option value="5" selected>Lv.5</option>
-                <option value="custom">▶ カスタム (自分で強さを決める)</option>
+            <select id="enemy-level" onchange="toggleCustomCPU()" style="padding: 10px; font-size: 1em; border-radius: 4px; font-family: inherit; background: #222; color: #fff; border: 2px solid #fff; flex-grow: 1; max-width: 300px;">
+                <option value="1" selected>Lv.1 (初心者)</option>
+                <option value="2">Lv.2 (見習い)</option>
+                <option value="3">Lv.3 (中級者)</option>
+                <option value="4">Lv.4 (上級者)</option>
+                <option value="5">Lv.5 (達人)</option>
+                <option value="custom">▶ カスタム (自分で決める)</option>
             </select>
             <button onclick="startBattle('normal', '')" id="battle-btn" style="background:var(--accent); border-color:#fff;">バトル開始！</button>
             <button onclick="startBattle('auto10000', '')" id="battle-10000-btn" style="background:#8e44ad; border-color:#fff;">10000回連続対戦！</button>
@@ -250,13 +288,13 @@
         <div id="custom-cpu-ui" style="display:none; background:rgba(0,0,0,0.5); padding:15px; margin-bottom:15px; border: 2px dashed #fff; border-radius: 4px;">
             <div class="slider-row" style="margin: 5px 0;">
                 <label style="width:120px;">敵 物理威力:</label>
-                <input type="range" id="custom-atk" min="40" max="120" step="1" value="60" oninput="document.getElementById('custom-atk-val').innerText=this.value">
-                <span style="font-family:monospace;">威力 <span id="custom-atk-val" style="color:var(--crit); font-weight:bold;">60</span></span>
+                <input type="range" id="custom-atk" min="40" max="120" step="1" value="100" oninput="document.getElementById('custom-atk-val').innerText=this.value">
+                <span style="font-family:monospace; margin-left: 10px;">威力 <span id="custom-atk-val" style="color:var(--crit); font-weight:bold;">100</span></span>
             </div>
             <div class="slider-row" style="margin: 5px 0;">
                 <label style="width:120px;">敵 魔法威力:</label>
-                <input type="range" id="custom-mag" min="20" max="120" step="1" value="60" oninput="document.getElementById('custom-mag-val').innerText=this.value">
-                <span style="font-family:monospace;">威力 <span id="custom-mag-val" style="color:#3498db; font-weight:bold;">60</span></span>
+                <input type="range" id="custom-mag" min="20" max="120" step="1" value="100" oninput="document.getElementById('custom-mag-val').innerText=this.value">
+                <span style="font-family:monospace; margin-left: 10px;">威力 <span id="custom-mag-val" style="color:#3498db; font-weight:bold;">100</span></span>
             </div>
         </div>
 
@@ -265,11 +303,11 @@
         <div class="status-panel">
             <div class="player-status rpg-window" style="margin-bottom:0; padding:10px;">
                 <strong>あなた (<span id="p1-class-text">勇者</span>)</strong>
-                <div style="margin-top:5px;">HP: <span id="p1-hp-text">200</span> / 200</div>
+                <div style="margin-top:5px;">HP: <span id="p1-hp-text">240</span> / 240</div>
             </div>
-            <div class="enemy-status rpg-window" style="margin-bottom:0; padding:10px; text-align:right;">
-                <strong>敵CPU (<span id="enemy-lv-text">Lv.5</span>)</strong>
-                <div style="margin-top:5px;">HP: <span id="p2-hp-text">200</span> / 200</div>
+            <div class="enemy-status rpg-window" style="margin-bottom:0; padding:10px;">
+                <strong>敵CPU (<span id="enemy-lv-text">Lv.1 (初心者)</span>)</strong>
+                <div style="margin-top:5px;">HP: <span id="p2-hp-text">240</span> / 240</div>
             </div>
         </div>
 
@@ -289,7 +327,7 @@
             </div>
             <div class="character" id="p2-sprite">
                 <div class="hp-bar-container"><div class="hp-bar" id="p2-hp-bar"></div></div>
-                <img id="p2-img-battle" src="hero.png" onerror="handleImageError(this)">
+                <img id="p2-img-battle" src="ninja.png" onerror="handleImageError(this)">
             </div>
         </div>
 
@@ -297,39 +335,42 @@
     </div>
 
     <div id="rl" class="tab-content rpg-window">
-        <h2>▶ AIはどうやって「最強」を見つけるのか？（Q-learning）</h2>
+        <h2>▶ AIはどうやって「最強」を見つけるのか？</h2>
         
         <div class="rule-box" style="background: rgba(0,0,0,0.5); border-color: #9b59b6;">
             <p style="color: #9b59b6; font-weight: bold; font-size: 1.1em;">【数学を知らないAIの学習メカニズム】</p>
             <p>AIは最初、数学の公式を一切知りません。代わりに頭の中に<strong>「威力40から120までのラベルが貼られた玉」が入った袋</strong>を持っています。</p>
-            <p>AIはバトルを繰り返しながら、以下のルールで玉の数（期待値=Q値）を更新していきます。</p>
+            <p>AIはバトルを繰り返しながら、以下のルールで玉の数を更新していきます。</p>
             <ul>
-                <li><strong>行動:</strong> 袋から確率（ε-greedy）で玉を引き、その威力で攻撃。</li>
+                <li><strong>行動:</strong> 袋に入っているある威力の玉を引き、その威力で攻撃。時々、玉の個数による確率の違いを無視して、全ての威力が出る確率を同じにして、出た威力で攻撃。</li>
                 <li><strong>報酬・罰:</strong> ダメージを与えたら玉を増やし、ミスしたら減らす。</li>
                 <li><strong>学習率（α）:</strong> まぐれの「会心の一撃」に騙されないよう、一度に増減させる玉の数は「実際のダメージ × α」に制限する。</li>
             </ul>
         </div>
         
         <div class="rl-params">
-            <div><span style="color: #e74c3c;">学習率 (α) = 0.1</span></div>
+            <div><span style="color: #e74c3c;">学習率 (α) = 0.01</span></div>
             <div>
                 <span style="color: #3498db;">探索率 (ε) = <span id="rl-eps-display">20</span>%</span>
                 <input type="range" id="rl-eps-slider" min="0" max="100" value="20" oninput="document.getElementById('rl-eps-display').innerText=this.value">
             </div>
-            <div style="font-size: 0.75em; color: #ff9800;">※ 探索率を0%にして実行すると、最初に偶然当たった威力を「最強」だと思い込み、他を一切試さなくなる『局所最適解』の罠にハマります！</div>
         </div>
         
-        <button id="rl-btn" onclick="runRL()">▶ AIの特訓（袋の中の玉の更新）を可視化する</button>
+        <button id="rl-btn" onclick="runRL()" style = "background: #2ecc71">▶ AIの特訓（袋の中の玉の更新）を可視化する</button>
         <div id="rl-progress" style="text-align: center; margin-top: 10px; font-weight: bold; color: var(--crit);"></div>
 
         <div class="graphs-wrapper">
             <div>
                 <h3 style="color:#e74c3c; text-align:center; margin-bottom:5px;">⚔️ 物理攻撃の学習 (威力40〜120の玉の数)</h3>
-                <div class="graph-container" id="rl-graph-phys"></div>
+                <div class="graph-scroll-area">
+                    <div class="graph-container" id="rl-graph-phys"></div>
+                </div>
             </div>
             <div>
                 <h3 style="color:#3498db; text-align:center; margin-bottom:5px;">☄️ 魔法攻撃の学習 (威力20〜120の玉の数)</h3>
-                <div class="graph-container" id="rl-graph-mag"></div>
+                <div class="graph-scroll-area">
+                    <div class="graph-container" id="rl-graph-mag"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -338,29 +379,29 @@
         <h2>▶ 最終決戦：AI完全体に挑め</h2>
         
         <div class="rule-box" style="border-color: #e74c3c; text-align:center;">
-            <p>数万回に及ぶ強化学習の末、AIは自力で以下の<strong>「最適解パラメータ」</strong>を導き出しました。<br>
+            <p>数万回に及ぶ強化学習の末、AIは自力で以下の<strong>パラメータ</strong>を導き出した。<br>
             <span style="font-size:0.8em; color:#aaa;">※第3タブで学習を行うと値が更新されます。</span></p>
             <div style="font-size:1.3em; margin:10px 0; font-family:monospace; color:var(--crit); background:#222; padding:10px; border:2px solid #fff; border-radius:5px;">
                 【AI完全体】 物理(威力<span id="ai-learned-atk">??</span>/命中<span id="ai-learned-atk-hit">??</span>%) | 魔法(威力<span id="ai-learned-mag">??</span>/命中<span id="ai-learned-mag-hit">??</span>%)
             </div>
-            <p>あなたが第1タブで作成したキャラクターで、この最強AIにバトルを挑みます！</p>
+            <p>キミが第1タブで作成したキャラクターで、この最強AIにバトルを挑もう！</p>
         </div>
 
-        <div style="text-align:center; margin-bottom: 20px;">
+        <div class="battle-header-controls" style="justify-content: center;">
             <button onclick="startAiBattle()" id="battle-btn-ai" style="background:#e74c3c; font-size:1.2em; padding:15px 30px; border-color:#fff;">最終決戦を開始する！</button>
             <button onclick="startBattle('auto10000', '-ai')" id="battle-10000-btn-ai" style="background:#8e44ad; border-color:#fff; margin-left:10px;">10000回連続対戦！</button>
         </div>
 
-        <div class="distance-display" id="battle-distance-ai" style="color:#aaa;">距离判定中...</div>
+        <div class="distance-display" id="battle-distance-ai" style="color:#aaa;">距離判定中...</div>
 
         <div class="status-panel">
             <div class="player-status rpg-window" style="margin-bottom:0; padding:10px;">
                 <strong>あなた (<span id="p1-class-text-ai">勇者</span>)</strong>
-                <div style="margin-top:5px;">HP: <span id="p1-hp-text-ai">200</span> / 200</div>
+                <div style="margin-top:5px;">HP: <span id="p1-hp-text-ai">240</span> / 240</div>
             </div>
-            <div class="enemy-status rpg-window" style="margin-bottom:0; padding:10px; text-align:right;">
+            <div class="enemy-status rpg-window" style="margin-bottom:0; padding:10px;">
                 <strong>AI完全体 (Lv.MAX)</strong>
-                <div style="margin-top:5px;">HP: <span id="p2-hp-text-ai">200</span> / 200</div>
+                <div style="margin-top:5px;">HP: <span id="p2-hp-text-ai">240</span> / 240</div>
             </div>
         </div>
 
@@ -397,8 +438,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms / battleSpeed));
 let setupClickCount = 0;
 let setupClickTimer = null;
 
-// AIが学習したステータス
-let aiLearnedStats = { atk: 60, mag: 60, name: "AI完全体", imgSrc: 'hero.png' };
+// HPの最大値
+const maxHp = 240;
+
+// AIが学習したステータス (初期値)
+let aiLearnedStats = { atk: 100, mag: 100, name: "AI完全体", imgSrc: 'hero.png' };
 
 // --- 画像が見つからなかった場合のフェイルセーフ ---
 const emojiMap = {
@@ -421,7 +465,7 @@ function handleImageError(img) {
 }
 
 // --- 1. セットアップ・パラメータ処理 ---
-let playerStats = { atk: 60, atkHit: 60, mag: 60, magHit: 60, className: '勇者', imgSrc: 'hero.png' };
+let playerStats = { atk: 100, atkHit: 20, mag: 100, magHit: 20, className: '勇者', imgSrc: 'hero.png' };
 
 function updateStats() {
     const atk = parseInt(document.getElementById('atk-slider').value);
@@ -438,11 +482,11 @@ function updateStats() {
     document.getElementById('mag-val').innerText = playerStats.mag;
     document.getElementById('mag-hit').innerText = playerStats.magHit;
 
-    if(atk >= 80 && mag <= 50) { 
+    if(atk >= 70 && mag <= 50) { 
         playerStats.className = '戦士'; playerStats.imgSrc = 'fighter.png'; 
-    } else if(atk <= 50 && mag >= 80) { 
+    } else if(atk <= 50 && mag >= 70) { 
         playerStats.className = '魔女'; playerStats.imgSrc = 'magic.png'; 
-    } else if(atk <= 50 && mag <= 50) { 
+    } else if(atk <= 40 && mag <= 40) { 
         playerStats.className = '忍者'; playerStats.imgSrc = 'ninja.png'; 
     } else { 
         playerStats.className = '勇者'; playerStats.imgSrc = 'hero.png'; 
@@ -489,7 +533,7 @@ function handleSetupTabClick() {
     if(setupClickCount >= 5) {
         document.getElementById('tab-btn-rl').classList.remove('locked-tab');
         document.getElementById('tab-btn-ai').classList.remove('locked-tab');
-        alert("🔒 シークレットモード解放：\nAIの強化学習グラフと、完全体AIとの最終決戦タブがアンロックされました！");
+        alert("🔒 シークレットモード解放：\nAIの強化学習と、完全体AIとの最終決戦タブがアンロックされました！");
         setupClickCount = 0;
     } else {
         setupClickTimer = setTimeout(() => { setupClickCount = 0; }, 1500);
@@ -499,6 +543,9 @@ function handleSetupTabClick() {
 function toggleCustomCPU() {
     const isCustom = document.getElementById('enemy-level').value === 'custom';
     document.getElementById('custom-cpu-ui').style.display = isCustom ? 'block' : 'none';
+    if(isCustom) {
+        document.getElementById('enemy-lv-text').innerText = "Custom";
+    }
 }
 
 // --- 2 & 4. バトルシステム ---
@@ -510,12 +557,23 @@ function logBattle(msg, ui) {
 }
 
 const cpuLevels = {
-    1: { atk: 110, mag: 110, name: "Lv.1", imgSrc: 'fighter.png' }, 
-    2: { atk: 100, mag: 100, name: "Lv.2", imgSrc: 'ninja.png' },     
-    3: { atk: 90, mag: 90, name: "Lv.3", imgSrc: 'magic.png' },   
-    4: { atk: 70, mag: 70, name: "Lv.4", imgSrc: 'fighter.png' }, 
-    5: { atk: 60, mag: 60, name: "Lv.5", imgSrc: 'hero.png' }     
+    1: { atk: 120, mag: 120, name: "Lv.1 (初心者)", imgSrc: 'ninja.png' }, 
+    2: { atk: 100, mag: 100, name: "Lv.2 (見習い)", imgSrc: 'hero.png' },     
+    3: { atk: 40, mag: 80, name: "Lv.3 (中級者)", imgSrc: 'magic.png' },   
+    4: { atk: 80, mag: 50, name: "Lv.4 (上級者)", imgSrc: 'fighter.png' }, 
+    5: { atk: 70, mag: 50, name: "Lv.5 (達人)", imgSrc: 'hero.png' }     
 };
+
+// 敵レベル選択の表示更新用リスナー
+document.getElementById('enemy-level').addEventListener('change', function() {
+    if(this.value !== 'custom') {
+        const cpu = cpuLevels[parseInt(this.value)];
+        document.getElementById('enemy-lv-text').innerText = cpu.name;
+        const p2ImgBattle = document.getElementById('p2-img-battle');
+        p2ImgBattle.dataset.fallbackApplied = "false";
+        p2ImgBattle.src = cpu.imgSrc;
+    }
+});
 
 async function playCoinToss(ui) {
     if (document.body.classList.contains('fast-mode')) return Math.random() < 0.5;
@@ -574,18 +632,18 @@ async function triggerEndSequence(winner, loser, ui) {
     if(winner.name === "あなた") {
         winner.img.classList.add('victory-glow');
         banner.className = 'victory-banner';
-        banner.innerHTML = 'VICTORY!!<br><span style="font-size:0.3em; letter-spacing:2px;">パラメータの勝利だ！</span>';
-        logBattle("<br><span style='color:var(--crit); font-size:1.2em;'>▶ 激闘を制した！パラメータの勝利だ！</span>", ui);
+        banner.innerHTML = 'VICTORY!!';
+        logBattle("<br><span style='color:var(--crit); font-size:1.2em;'>▶ 激闘を制した！キミの勝利だ！</span>", ui);
     } else {
         banner.className = 'victory-banner defeat-banner';
-        banner.innerHTML = 'DEFEATED...<br><span style="font-size:0.3em; letter-spacing:2px;">期待値を計算し直そう</span>';
+        banner.innerHTML = 'DEFEATED...';
         logBattle("<br><span style='color:#e74c3c; font-size:1.2em;'>▶ あなたは倒れてしまった...</span>", ui);
     }
     ui.field.appendChild(banner);
 }
 
 function runInstantBattle(p1Stats, cpuStats) {
-    let hp1 = 200, hp2 = 200;
+    let hp1 = maxHp, hp2 = maxHp;
     while(hp1 > 0 && hp2 > 0) {
         let dist = Math.random() < 0.5 ? 'near' : 'far';
         let p1GoesFirst = Math.random() < 0.5;
@@ -630,7 +688,6 @@ async function runVisualBattle(cpu, prefix) {
         coinText: document.getElementById(`coin-text${prefix}`)
     };
 
-    const maxHp = 200;
     let p1 = { hp: maxHp, sprite: document.getElementById(`p1-sprite${prefix}`), img: document.querySelector(`#p1-sprite${prefix} img`), bar: document.getElementById(`p1-hp-bar${prefix}`), txt: document.getElementById(`p1-hp-text${prefix}`), name: "あなた" };
     let p2 = { hp: maxHp, sprite: document.getElementById(`p2-sprite${prefix}`), img: document.querySelector(`#p2-sprite${prefix} img`), bar: document.getElementById(`p2-hp-bar${prefix}`), txt: document.getElementById(`p2-hp-text${prefix}`), name: cpu.name };
     
@@ -723,7 +780,7 @@ async function startBattle(mode, prefix) {
             document.getElementById('enemy-lv-text').innerText = "Custom";
         } else {
             cpu = cpuLevels[parseInt(lvSelection)];
-            document.getElementById('enemy-lv-text').innerText = `Lv.${lvSelection}`;
+            document.getElementById('enemy-lv-text').innerText = cpu.name;
         }
     }
 
@@ -816,7 +873,7 @@ async function executeAttack(attackerNum, dist, power, hitRate, defender, attack
         defender.hp -= finalDamage;
         if(defender.hp < 0) defender.hp = 0;
         defender.txt.innerText = defender.hp;
-        defender.bar.style.width = `${(defender.hp / 200) * 100}%`;
+        defender.bar.style.width = `${(defender.hp / maxHp) * 100}%`;
         
         const dmgText = document.createElement('div');
         dmgText.className = `dmg-popup ${isCrit ? 'crit' : ''}`;
@@ -876,10 +933,10 @@ async function runRL() {
     graphMag.innerHTML = ''; 
     
     // Q-learning パラメータ
-    const alpha = 0.1;   // 学習率
+    const alpha = 0.01;   // 学習率
     const epsilon = parseInt(document.getElementById('rl-eps-slider').value) / 100; // スライダーから取得
     const totalEpisodes = 500000;
-    const batchSize = 100;
+    const batchSize = 1000;
 
     // Q値（袋の中の玉の数）の初期化
     let qPhys = new Array(81).fill(10); // 威力 40〜120
@@ -928,7 +985,7 @@ async function runRL() {
     // --- Q-learning 学習ループ（アニメーション表示） ---
     for (let ep = 0; ep <= totalEpisodes; ep += batchSize) {
         btn.innerText = `▶ 学習中... (${ep} / ${totalEpisodes} 回)`;
-        progressText.innerText = `🔄 AIが袋の中の玉を更新中... (${Math.floor((ep/totalEpisodes)*100)}%)`;
+        progressText.innerText = `🔄 AIが袋の中の玉の数を更新中... (${Math.floor((ep/totalEpisodes)*100)}%)`;
 
         for (let b = 0; b < batchSize; b++) {
             // 物理の学習 1エピソード
@@ -1001,7 +1058,7 @@ async function runRL() {
     document.getElementById('ai-learned-mag').innerText = bestMagPower;
     document.getElementById('ai-learned-mag-hit').innerText = Math.min(120 - bestMagPower, 100);
 
-    alert(`【強化学習完了！】\n探索率 ε=${epsilon * 100}% での学習が終わりました！\n\n・物理: 威力${bestPhysPower}\n・魔法: 威力${bestMagPower}\n\n第4タブ「vs AI完全体」のステータスが更新されました。`);
+    alert(`学習が終わりました！\n\n・物理: 威力${bestPhysPower}\n・魔法: 威力${bestMagPower}\n\n第4タブ「vs AI完全体」のステータスが更新されました。`);
     
     // ▼ ボタンを再有効化してテキストと色を変更する ▼
     btn.innerText = `▶ もう一度学習する（前回発見: 物理威力${bestPhysPower} / 魔法威力${bestMagPower}）`;
